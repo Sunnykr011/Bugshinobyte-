@@ -1,0 +1,183 @@
+
+---
+
+🔍 Phase 2: Stack-Aware Recon (Layered Discovery using Tech Awareness)
+
+> Goal: Now that you know the tech stack (via Wappalyzer etc.), start digging strategically. This phase is all about precision discovery, custom recon paths, and tech-matching exploits.
+
+
+
+
+---
+
+1. Build a Stack → Attack Map
+
+For each tech/framework, there’s a list of known misconfigurations, juicy endpoints, and common logic bugs.
+Start mapping those now.
+
+Examples:
+
+React / Angular / Next.js
+
+Check: client-side routing quirks (/#/admin, /dashboard)
+
+Open redirects using query params (?next=, ?redirect=)
+
+Hidden routes in JS files
+
+
+WordPress / Laravel / PHP
+
+Look for .env, .git, wp-json, /vendor, /storage
+
+Run CMS-specific fingerprinting tools (wpscan, larascan)
+
+
+Node.js / Express
+
+Common misroutes, prototype pollution, file disclosure in dev mode
+
+
+Firebase / AWS / GCP
+
+Check for exposed keys, misconfigured .well-known/assetlinks.json, S3 leaks, IAM role assumptions
+
+
+
+
+---
+
+2. Smart Google Dorking (tech-specific)
+
+Now that you know the backend or platform, you can use sniper dorks:
+
+site:target.com inurl:.env
+site:target.com intitle:"index of" "config"
+site:github.com target.com language:json
+site:target.com ext:js inurl:firebase
+
+You're no longer guessing — you're using context from the tech stack.
+
+
+---
+
+3. Hidden Endpoints & Soft 403 Bypasses
+
+Most modern web apps don’t give 404. They give:
+
+403 → forbidden
+
+401 → unauthorized
+
+200 → soft redirects
+
+500 → crash indicators
+
+
+You want to test things like:
+
+/admin
+/admin/
+/admin%2f
+/..;/admin
+/;admin
+
+Tools: ffuf, feroxbuster, or mobile-friendly ones like arjun (for parameter discovery).
+
+> But only after you logically guess based on the stack. Example: Laravel? Try /artisan, /storage/logs, /debugbar.
+
+
+
+
+---
+
+4. GitHub Recon — But Targeted
+
+Since you know the target uses React or Laravel or Firebase, look for devs or orgs uploading:
+
+"target.com" filename:firebase.json
+"target.com" language:javascript "apiKey"
+"target.com" language:env
+
+Save and analyze .env, config.js, .yml, docker-compose.yml
+
+
+---
+
+5. Behavioral Mapping
+
+Use the stack knowledge to test how the app behaves when something goes wrong.
+
+Examples:
+
+React + REST API:
+
+Send invalid tokens or requests, observe error structure.
+
+
+Laravel:
+
+Add _debug param to URL, see if debug bar activates.
+
+
+Firebase:
+
+Test if https://<project>.firebaseio.com/.json exposes data
+
+
+
+Behavior tells you what’s enabled, even when it’s hidden.
+
+
+---
+
+6. Tag Everything in Your Recon Notes
+
+Use this structure for notes:
+
+## Laravel Recon Notes
+- Tech Confirmed via: X-Powered-By header
+- Common Laravel files: .env, /storage/logs, /vendor
+- Actions Taken:
+  - Dorked for exposed `.env` ✅
+  - Hit known paths (`/artisan`, `/server.php`) ✅
+  - Analyzed headers: `APP_ENV=production` found
+
+## Firebase Recon Notes
+- Found firebaseConfig in main.js
+- Tried public `.json` access — denied ✅
+- Tested for storage bucket access — denied ✅
+- Note: Watch for mobile apps using this config
+
+
+---
+
+7. Bonus: Build Recon Trees per Stack
+
+Once you do this for 5–6 different stacks, you can reuse recon trees.
+
+Example:
+
+React Tree →
+  - Gather JS → Parse Endpoints
+  - Test client routes → /#/admin
+  - Look for exposed props/state in console
+  - Look for token in localStorage/sessionStorage
+
+
+---
+
+🎯 What’s the Real Goal of Phase 2?
+
+Not just finding paths — but understanding the recon patterns of each tech stack.
+Once you do this across targets, you’ll develop:
+
+Recon intuition: You’ll guess bugs just from stack
+
+Less noise: No more bruteforcing junk
+
+More signal: Straight to juicy, real bugs
+
+
+
+---
